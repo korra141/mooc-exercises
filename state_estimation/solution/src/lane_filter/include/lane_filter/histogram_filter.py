@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[81]:
+# In[1]:
 
 
 # start by importing some things we will need
@@ -12,7 +12,7 @@ from scipy.ndimage.filters import gaussian_filter
 from scipy.stats import entropy, multivariate_normal
 from math import floor, sqrt
 
-# In[84]:
+# In[33]:
 
 
 # Now let's define the prior function. In this case we choose
@@ -25,7 +25,7 @@ def histogram_prior(belief, grid_spec, mean_0, cov_0):
     belief = RV.pdf(pos)
     return belief
 
-# In[95]:
+# In[34]:
 
 
 # Now let's define the predict function
@@ -80,7 +80,7 @@ def histogram_predict(belief, dt, left_encoder_ticks, right_encoder_ticks, grid_
         return belief
 
 
-# In[96]:
+# In[35]:
 
 
 # We will start by doing a little bit of processing on the segments to remove anything that is behing the robot (why would it be behind?)
@@ -100,7 +100,7 @@ def prepare_segments(segments):
         filtered_segments.append(segment)
     return filtered_segments
 
-# In[97]:
+# In[36]:
 
 
 
@@ -140,7 +140,7 @@ def generate_vote(segment, road_spec):
 
     return d_i, phi_i
 
-# In[98]:
+# In[37]:
 
 
 def generate_measurement_likelihood(segments, road_spec, grid_spec):
@@ -168,7 +168,7 @@ def generate_measurement_likelihood(segments, road_spec, grid_spec):
     return measurement_likelihood
 
 
-# In[99]:
+# In[38]:
 
 
 def histogram_update(belief, segments, road_spec, grid_spec):
@@ -182,6 +182,9 @@ def histogram_update(belief, segments, road_spec, grid_spec):
         # TODO: combine the prior belief and the measurement likelihood to get the posterior belief
         # Don't forget that you may need to normalize to ensure that the output is valid probability distribution
         belief = np.multiply(belief,measurement_likelihood)
-        belief = belief/np.sum(belief) # replace this with something that combines the belief and the measurement_likelihood
+        if np.sum(belief) == 0:
+            belief = measurement_likelihood
+        else:
+            belief /= np.sum(belief)# replace this with something that combines the belief and the measurement_likelihood
     return (measurement_likelihood, belief)
 

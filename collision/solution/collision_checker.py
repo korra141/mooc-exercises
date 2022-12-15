@@ -11,6 +11,7 @@ from dt_protocols import (
     PlacedPrimitive,
     Rectangle,
 )
+import numpy as np
 
 __all__ = ["CollisionChecker"]
 
@@ -37,15 +38,27 @@ def check_collision(environment: List[PlacedPrimitive], robot_body: List[PlacedP
         robot_pose: FriendlyPose) -> bool:
     # This is just some code to get you started, but you don't have to follow it exactly
 
+    #Put placed primites in world frame 
     # You can start by rototranslating the robot_body by the robot_pose
     rototranslated_robot: List[PlacedPrimitive] = []
+    phi = robot_pose.theta
+    for robot_parts in robot_body: 
+        robot_frame = np.array([robot_parts.pose.x,robot_parts.pose.y,1)]
+        roto_translate = np.array([[np.cos(phi),-np.sin(phi), robot_pose.x],
+                                   [np.sin(phi), np.cos(phi), robot_pose.y],
+                                   [0,0,1]])
+        world_frame = np.dot(roto_translate,robot_frame)
+        pose_new = new FriendlyPose(world_frame[0],world_frame[1],robot_parts.pose.theta + phi)
+        rototranslated_robot.append(new PlacedPrimitive(pose_new,robot_parts.primitive))
+        
+        
     # == WRITE ME ==
 
     # Then, call check_collision_list to see if the robot collides with the environment
     collided = check_collision_list(rototranslated_robot, environment)
 
     # return a random choice
-    return random.uniform(0, 1) > 0.5
+    return collided
 
 
 def check_collision_list(rototranslated_robot: List[PlacedPrimitive], environment: List[PlacedPrimitive]) -> bool:
@@ -56,21 +69,58 @@ def check_collision_list(rototranslated_robot: List[PlacedPrimitive], environmen
 
     return False
 
+def distance_between(a,b):                            
+    return np.linalg.norm(a-b)
+                               
+def radii_rectangle(a: PlacedPrimitive)
+    # inscribed and circumscribed circles
+    return min(a.ymin+a.ymax,a.xmin + a.xmax)/2, distance_between(np.array([xmax,ymax]),np.array([xmin,ymin]))/2
+
+def corners_of_rectangle(a: PlacedPrimitive):
+    corners = []
+    corners.append(np.array([a.pose.x + a.pose.primitive.xmax,a.pose.y + a.pose.primitive.ymax]))
+    corners.append(np.array([a.pose.x + a.pose.primitive.xmax,a.pose.y - a.pose.primitive.ymin]))
+    corners.append(np.array([a.pose.x - a.pose.primitive.xmin,a.pose.y + a.pose.primitive.ymax]))
+    corners.append(np.array([a.pose.x - a.pose.primitive.xmin,a.pose.y - a.pose.primitive.ymin]))
+    
+    return corners
+                               
+def circle_collision(pose1,pose2,radius1,radius2):
+    bool collision_check = False
+    if(0 <= distance_between(np.array([pose1.x,pose1.y]),np.array([pose2.x,pose2.y])) <= (radius1 + radius2)):
+        collision_check =  True
+    return collision_check
 
 def check_collision_shape(a: PlacedPrimitive, b: PlacedPrimitive) -> bool:
     # This is just some code to get you started, but you don't have to follow it exactly
+    bool is_collided = False
 
     # This is just some code to get you started, but you don't have to follow it exactly
     if isinstance(a.primitive, Circle) and isinstance(b.primitive, Circle):
-        ...
+        is_collided = circle_collision(a.pose,b.pose,a.primitive.radius,b.primitive.radius)
+                               
         # == WRITE ME ==
     if isinstance(a.primitive, Rectangle) and isinstance(b.primitive, Circle):
-        ...
+        r_in,r_cir = radii_rectangle(a)
+        if(circle_collision(a.pose,b.pose,a.primitive.radius,r_in) == True):
+            is_collided = True
+        elif(circle_collision(a.pose,b.pose,a.primitive.radius,r_cir) == True):
+            for corner in corners_of_rectangle(a):
+                if(distance_between(corner,b.pose)<=b.primitive.radius):
+                    is_collided = True
+                    break
+
         # == WRITE ME ==
     if isinstance(a.primitive, Rectangle) and isinstance(b.primitive, Rectangle):
-        ...
-        # == WRITE ME ==
-    ...
-    # for now let's return a random guess
+        r_a_in,r_a_cir = radii_rectangle(a)
+        r_b_in,r_b_cir = radii_rectangle(b)
+        
+        if(circle_collision(a.pose,b.pose,r_a_in,r_b_in) == True):
+            is_collided = True
+        elif(circle_collision(a.pose,b.pose,r_a_cir,r_b_cir == True):
+             for corner in corners_of_rectangle(b):
+                 if(a.primitive.xmin <= corner[0] - a.pose.x <= a.primitive.xmax and a.primitive.ymin <= corner[1] - a.pose.y <= a.primitive.ymax ):
+                    is_collided = True
+                    break  
 
-    return ...
+    return is_collided

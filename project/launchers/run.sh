@@ -13,13 +13,8 @@ set -eux
 dt-exec-BG roslaunch --wait agent agent_node.launch
 dt-exec-BG roslaunch --wait car_interface all.launch veh:=$VEHICLE_NAME
 
-# Will activate this once we run the full demo
+# This runs the communication node and only the other needed nodes
 dt-exec-FG roslaunch --wait duckietown_demos communication.launch || true
-
-# For the moment let's just run our specific node since we dont need any other one for testing
-#dt-exec-BG roslaunch --wait led_emitter led_emitter_node_standalone_test.launch
-#dt-exec-FG roslaunch --wait communication communication_node_standalone_test.launch || true
-
 
 
 copy-ros-logs

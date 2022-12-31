@@ -10,6 +10,7 @@ from dt_protocols import (
     MapDefinition,
     PlacedPrimitive,
     Rectangle,
+    Primitive
 )
 import numpy as np
 
@@ -72,7 +73,7 @@ def check_collision_list(rototranslated_robot: List[PlacedPrimitive], environmen
 def distance_between(a,b):                            
     return np.linalg.norm(a-b)
                                
-def radii_rectangle(a: PlacedPrimitive)
+def radii_rectangle(a: Primitive):
     # inscribed and circumscribed circles
     return min(a.ymin+a.ymax,a.xmin + a.xmax)/2, distance_between(np.array([a.xmax,a.ymax]),np.array([a.xmin,a.ymin]))/2
 
@@ -101,26 +102,26 @@ def check_collision_shape(a: PlacedPrimitive, b: PlacedPrimitive) -> bool:
                                
         # == WRITE ME ==
     elif isinstance(a.primitive, Rectangle) and isinstance(b.primitive, Circle):
-        r_in,r_cir = radii_rectangle(a)
+        r_in,r_cir = radii_rectangle(a.primitive)
         if(circle_collision(a.pose,b.pose,b.primitive.radius,r_in) == True):
             is_collided = True
         elif(circle_collision(a.pose,b.pose,b.primitive.radius,r_cir) == True):
             for corner in corners_of_rectangle(a):
-                if(distance_between(corner,b.pose)<=b.primitive.radius):
+                if(distance_between(corner,np.array([b.pose.x,b.pose.y]))<=b.primitive.radius):
                     is_collided = True
                     break
 
         # == WRITE ME ==
     elif isinstance(a.primitive, Rectangle) and isinstance(b.primitive, Rectangle):
-        r_a_in,r_a_cir = radii_rectangle(a)
-        r_b_in,r_b_cir = radii_rectangle(b)
+        r_a_in,r_a_cir = radii_rectangle(a.primitive)
+        r_b_in,r_b_cir = radii_rectangle(b.primitive)
         
         if(circle_collision(a.pose,b.pose,r_a_in,r_b_in) == True):
             is_collided = True
-        elif(circle_collision(a.pose,b.pose,r_a_cir,r_b_cir == True):
+        elif(circle_collision(a.pose,b.pose,r_a_cir,r_b_cir == True)):
              for corner in corners_of_rectangle(b):
-                 if(a.primitive.xmin <= corner[0] - a.pose.x <= a.primitive.xmax and a.primitive.ymin <= corner[1] - a.pose.y <= a.primitive.ymax ):
-                    is_collided = True
-                    break  
+                    if(a.primitive.xmin <= corner[0] - a.pose.x <= a.primitive.xmax and a.primitive.ymin <= corner[1] - a.pose.y <= a.primitive.ymax ):
+                        is_collided = True
+                        break  
 
     return is_collided

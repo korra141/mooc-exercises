@@ -100,18 +100,18 @@ def check_collision_shape(a: PlacedPrimitive, b: PlacedPrimitive) -> bool:
         is_collided = circle_collision(a.pose,b.pose,a.primitive.radius,b.primitive.radius)
                                
         # == WRITE ME ==
-    if isinstance(a.primitive, Rectangle) and isinstance(b.primitive, Circle):
+    elif isinstance(a.primitive, Rectangle) and isinstance(b.primitive, Circle):
         r_in,r_cir = radii_rectangle(a)
-        if(circle_collision(a.pose,b.pose,a.primitive.radius,r_in) == True):
+        if(circle_collision(a.pose,b.pose,b.primitive.radius,r_in) == True):
             is_collided = True
-        elif(circle_collision(a.pose,b.pose,a.primitive.radius,r_cir) == True):
+        elif(circle_collision(a.pose,b.pose,b.primitive.radius,r_cir) == True):
             for corner in corners_of_rectangle(a):
                 if(distance_between(corner,b.pose)<=b.primitive.radius):
                     is_collided = True
                     break
 
         # == WRITE ME ==
-    if isinstance(a.primitive, Rectangle) and isinstance(b.primitive, Rectangle):
+    elif isinstance(a.primitive, Rectangle) and isinstance(b.primitive, Rectangle):
         r_a_in,r_a_cir = radii_rectangle(a)
         r_b_in,r_b_cir = radii_rectangle(b)
         
